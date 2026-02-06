@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import List
 
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, status
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm
@@ -32,8 +32,7 @@ app.add_middleware(
 )
 
 frontend_build = Path("frontend/build")
-if frontend_build.exists():
-    app.mount("/", StaticFiles(directory=str(frontend_build), html=True), name="frontend")
+frontend_assets = frontend_build / "assets"
 
 
 @app.post("/api/auth/register", response_model=schemas.UserOut)
@@ -232,3 +231,19 @@ async def static_files(path: str):
     if not frontend_build.exists():
         raise HTTPException(status_code=404, detail="Frontend build not found")
     return FileResponse(frontend_build / path)
+
+
+if frontend_assets.exists():
+    app.mount("/assets", StaticFiles(directory=str(frontend_assets)), name="assets")
+
+
+@app.get("/{path:path}")
+async def serve_frontend(path: str):
+    if not frontend_build.exists():
+        raise HTTPException(status_code=404, detail="Frontend build not found")
+    if path.startswith("api"):
+        raise HTTPException(status_code=404, detail="Not found")
+    target = frontend_build / path
+    if target.exists() and target.is_file():
+        return FileResponse(target)
+    return FileResponse(frontend_build / "index.html")
