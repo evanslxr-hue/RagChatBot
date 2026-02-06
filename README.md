@@ -50,6 +50,16 @@ DATABASE_URL=sqlite:///./backend/data/app.db
 STORAGE_ROOT=./backend/storage
 ```
 
+## Database & Storage Locations
+- **SQLite database**: `backend/data/app.db` (configured via `DATABASE_URL`). The default is `sqlite:///./backend/data/app.db`.
+- **Chroma persistence**: `backend/data/chroma` (configured via `CHROMA_PERSIST_DIR`).
+- **PDF storage**: `backend/storage/{user_id}/{course_id}/{pdf_id}.pdf` (configured via `STORAGE_ROOT`).
+
+### How the backend connects
+- SQLAlchemy reads `DATABASE_URL` from `.env` in `backend/app/config.py`.
+- Chroma reads `CHROMA_PERSIST_DIR` in `backend/app/config.py`.
+- Upload handlers write PDFs to `STORAGE_ROOT` and store the resolved `storage_path` in SQLite.
+
 ## Docker (HF Spaces Compatible)
 Build and run locally:
 ```bash
